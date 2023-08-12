@@ -1,0 +1,133 @@
+# zygote need to be started after otapreopt which will be done on post-fs-data
+on zygote-start
+
+# for bluetooth
+    # bluetooth LPM
+    chmod 0660 /dev/ttyS0
+    chmod 0660 /dev/ttyS1
+    chmod 0660 /dev/ttyS6
+    chmod 0660 /dev/ttyS7
+    chmod 0660 /dev/ttyS8
+    chmod 0660 /dev/ttyS9
+    chmod 0660 /dev/vflash
+    chmod 0664 /dev/vendor_storage
+    chown bluetooth net_bt /dev/vflash
+    chown bluetooth net_bt /dev/vendor_storage
+    chown bluetooth net_bt /dev/ttyS0
+    chown bluetooth net_bt /dev/ttyS1
+    chown bluetooth net_bt /dev/ttyS6
+    chown bluetooth net_bt /dev/ttyS7
+    chown bluetooth net_bt /dev/ttyS8
+    chown bluetooth net_bt /dev/ttyS9
+
+
+    mkdir /data/vendor/bluetooth 0770 bluetooth bluetooth
+
+    chown system system /sys/class/thermal/thermal_zone0/policy
+    chown system system /sys/class/thermal/thermal_zone1/policy
+    chown system system /sys/class/thermal/thermal_zone2/policy
+
+    write /dev/cpuset/foreground/cpus 0-7
+    write /dev/cpuset/foreground/boost/cpus 0-7
+    write /dev/cpuset/background/cpus 0-7
+    write /dev/cpuset/system-background/cpus 0-7
+    write /dev/cpuset/top-app/cpus 0-7
+
+    # reduce schedul time to improve io performance
+    write /sys/kernel/debug/sched_features NO_ENERGY_AWARE
+
+    chown system system /sys/devices/platform/fd5d0000.syscon/fd5d0000.syscon:usb2-phy@0/otg_mode
+    chmod 0660 /sys/devices/platform/fd5d0000.syscon/fd5d0000.syscon:usb2-phy@0/otg_mode
+
+    # The initial load of RT process, set the range of 0-1024, set the RT task above 300 will preferentially run on the cpuB(cpu4-cpu7)
+    write /proc/sys/kernel/sched_util_clamp_min_rt_default 0
+
+    # bluetooth
+    # change back to bluetooth from system
+    chown bluetooth net_bt_admin /data/misc/bluetooth
+    mkdir /data/misc/bluedroid 0770 bluetooth net_bt_admin
+    # bluetooth LPM
+    chmod 0220 /proc/bluetooth/sleep/lpm
+    chmod 0220 /proc/bluetooth/sleep/btwrite
+    chown bluetooth net_bt_admin /proc/bluetooth/sleep/lpm
+    chown bluetooth net_bt_admin /proc/bluetooth/sleep/btwrite
+    #USB device
+    insmod /vendor/lib/modules/rtk_btusb.ko
+    chmod 0660 /dev/rtkbt_dev
+    chown bluetooth net_bt_admin /dev/rtkbt_dev
+    # rfkill
+    chmod 0660 /sys/class/rfkill/rfkill0/state
+    chmod 0660 /sys/class/rfkill/rfkill0/type
+    chown bluetooth net_bt_admin /sys/class/rfkill/rfkill0/state
+    chown bluetooth net_bt_admin /sys/class/rfkill/rfkill0/type
+    # bluetooth MAC address programming
+    chown bluetooth net_bt_admin ro.bt.bdaddr_path
+    chown bluetooth net_bt_admin /system/etc/bluetooth
+    chown bluetooth net_bt_admin /data/misc/bluetooth
+    #setprop ro.bt.bdaddr_path "/data/misc/bluetooth/bdaddr"
+
+# for wifi
+
+    mkdir /data/vendor/wifi 0771 wifi wifi
+    mkdir /data/vendor/wifi/wpa 0770 wifi wifi
+    mkdir /data/vendor/wifi/wpa/sockets 0770 wifi wifi
+    
+    chown wifi wifi /sys/module/bcmdhd/parameters/firmware_path
+
+#for nfc
+    chmod 0660 /dev/bcm2079x
+    chown nfc nfc /dev/bcm2079x
+    mkdir /data/nfc 0700 nfc nfc encryption=Require
+    mkdir /data/nfc/param 0700 nfc nfc encryption=Require
+
+on property:wlan.driver.status=ok
+    chown wifi wifi /sys/module/bcmdhd/parameters/firmware_path
+    chown wifi wifi /sys/module/bcmdhd/parameters/nvram_path
+
+on property:vendor.wifi.direct.interface=p2p0
+    setprop wifi.direct.interface p2p0
+
+on property:vendor.wifi.direct.interface=p2p-dev-wlan0
+    setprop wifi.direct.interface p2p-dev-wlan0
+
+service wpa_supplicant /vendor/bin/hw/wpa_supplicant \
+    /vendor/etc/wifi/wpa_config.txt
+#   we will start as root and wpa_supplicant will switch to user wifi
+#   after setting up the capabilities required for WEXT
+#   user wifi
+#   group wifi inet keystore
+    interface android.hardware.wifi.supplicant@1.0::ISupplicant default
+    interface android.hardware.wifi.supplicant@1.1::ISupplicant default
+    interface android.hardware.wifi.supplicant@1.2::ISupplicant default
+    interface android.hardware.wifi.supplicant@1.3::ISupplicant default
+    interface android.hardware.wifi.supplicant@1.4::ISupplicant default
+    class main
+    socket wpa_wlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+
+service dhcpcd_bnep0 /system/bin/dhcpcd -BKLG
+    disabled
+    oneshot
+service dhcpcd_bnep1 /system/bin/dhcpcd -BKLG
+    disabled
+    oneshot
+service dhcpcd_bnep2 /system/bin/dhcpcd -BKLG
+    disabled
+    oneshot
+service dhcpcd_bnep3 /system/bin/dhcpcd -BKLG
+    disabled
+    oneshot
+service dhcpcd_bnep4 /system/bin/dhcpcd -BKLG
+    disabled
+    oneshot
+service dhcpcd_bt-pan /system/bin/dhcpcd -ABKL
+    class main
+    disabled
+    oneshot
+service iprenew_bt-pan /system/bin/dhcpcd -n
+    class main
+    disabled
+    oneshot
+

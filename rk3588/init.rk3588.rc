@@ -1,0 +1,85 @@
+on property:sys.boot_completed=1
+    chown system system /sys/class/devfreq/fb000000.gpu/governor
+    chown system system /sys/class/devfreq/fb000000.gpu/min_freq
+    chown system system /sys/class/devfreq/fb000000.gpu/max_freq
+
+    chmod 0664 /sys/class/devfreq/fb000000.gpu/governor
+    chmod 0664 /sys/class/devfreq/fb000000.gpu/min_freq
+    chmod 0664 /sys/class/devfreq/fb000000.gpu/max_freq
+
+    write /sys/devices/system/cpu/cpufreq/policy0/interactive/target_loads 65
+    write /sys/devices/system/cpu/cpufreq/policy4/interactive/target_loads 65
+    write /sys/devices/system/cpu/cpufreq/policy6/interactive/target_loads 65
+
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 0
+    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 0
+    write /sys/devices/system/cpu/cpu6/cpufreq/scaling_min_freq 0
+
+    write /sys/devices/system/cpu/cpufreq/policy0/scaling_governor schedutil
+    write /sys/devices/system/cpu/cpufreq/policy4/scaling_governor schedutil
+    write /sys/devices/system/cpu/cpufreq/policy6/scaling_governor schedutil
+
+    write /sys/class/devfreq/dmc/governor dmc_ondemand
+
+    write /dev/vehicle 88
+
+on charger
+    chown system system /sys/class/devfreq/fb000000.gpu/governor
+    chown system system /sys/class/devfreq/fb000000.gpu/min_freq
+    chown system system /sys/class/devfreq/fb000000.gpu/max_freq
+
+    chmod 0664 /sys/class/devfreq/fb000000.gpu/governor
+    chmod 0664 /sys/class/devfreq/fb000000.gpu/min_freq
+    chmod 0664 /sys/class/devfreq/fb000000.gpu/max_freq
+
+    write /sys/devices/system/cpu/cpufreq/policy0/interactive/target_loads 65
+    write /sys/devices/system/cpu/cpufreq/policy4/interactive/target_loads 65
+    write /sys/devices/system/cpu/cpufreq/policy6/interactive/target_loads 65
+
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 0
+    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 0
+    write /sys/devices/system/cpu/cpu6/cpufreq/scaling_min_freq 0
+
+    write /sys/devices/system/cpu/cpufreq/policy0/scaling_governor schedutil
+    write /sys/devices/system/cpu/cpufreq/policy4/scaling_governor schedutil
+    write /sys/devices/system/cpu/cpufreq/policy6/scaling_governor schedutil
+
+    write /sys/class/devfreq/dmc/governor dmc_ondemand
+
+on boot
+    chown system system /sys/class/thermal/thermal_zone0/policy
+    chown system system /sys/class/thermal/thermal_zone1/policy
+    chown system system /sys/class/thermal/thermal_zone2/policy
+
+    write /dev/cpuset/foreground/cpus 4-7
+    write /dev/cpuset/foreground/boost/cpus 4-7
+    write /dev/cpuset/background/cpus 0-7
+    write /dev/cpuset/system-background/cpus 0-7
+    write /dev/cpuset/top-app/cpus 4-7
+
+    # reduce schedul time to improve io performance
+    write /sys/kernel/debug/sched_features NO_ENERGY_AWARE
+
+    chown system system /sys/devices/platform/fd5d0000.syscon/fd5d0000.syscon:usb2-phy@0/otg_mode
+    chmod 0660 /sys/devices/platform/fd5d0000.syscon/fd5d0000.syscon:usb2-phy@0/otg_mode
+    
+    # The initial load of RT process, set the range of 0-1024, set the RT task above 300 will preferentially run on the cpuB(cpu4-cpu7)
+    write /proc/sys/kernel/sched_util_clamp_min_rt_default 0
+
+
+on init
+    # Increased power consumption and CPU in exchange for memory
+    write /proc/sys/vm/swappiness 100
+    write /sys/block/zram0/comp_algorithm lz4
+
+    chown system system /sys/system_monitor/system_status
+    chmod 0666 /sys/system_monitor/system_status
+
+    chown system system /sys/class/devfreq/dmc/system_status
+    chmod 0666 /sys/class/devfreq/dmc/system_status
+
+on early-init
+    write /sys/devices/system/cpu/cpufreq/policy0/scaling_governor performance
+    write /sys/devices/system/cpu/cpufreq/policy4/scaling_governor performance
+    write /sys/devices/system/cpu/cpufreq/policy6/scaling_governor performance
+    write /sys/class/devfreq/dmc/governor performance
