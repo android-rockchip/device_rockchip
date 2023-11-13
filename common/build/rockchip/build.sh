@@ -106,7 +106,7 @@ KERNEL_DEFCONFIG=`get_build_var PRODUCT_KERNEL_CONFIG`
 if [ "$KERNEL_DTS" = "" ] ; then
 KERNEL_DTS=`get_build_var PRODUCT_KERNEL_DTS`
 fi
-LOCAL_KERNEL_PATH=kernel-$KERNEL_VERSION
+LOCAL_KERNEL_PATH=`get_build_var PRODUCT_KERNEL_PATH`
 echo "-------------------KERNEL_VERSION:$KERNEL_VERSION"
 echo "-------------------KERNEL_DTS:$KERNEL_DTS"
 
