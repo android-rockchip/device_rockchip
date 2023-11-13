@@ -9,10 +9,14 @@ PRODUCT_VENDOR_PROPERTIES += graphics.gpu.profiler.support=true
 
 PRODUCT_PACKAGES += \
     displayd \
-    libion
+    libion \
+    uevents
 
 PRODUCT_PACKAGES += \
     RockchipPinnerService
+
+PRODUCT_PACKAGES += spidev_test spidev_fdx spiflash_test \
+    candump canfdtest cangen canplayer cansend
 
 # Disable partial updates
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -66,7 +70,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += vendor/rockchip/common/phone/etc/apns-full-conf.xml:system/etc/apns-conf.xml
 PRODUCT_COPY_FILES += vendor/rockchip/common/phone/etc/spn-conf.xml:system/etc/spn-conf.xml
 PRODUCT_PROPERTY_OVERRIDES += \
-    ro.product.ota.host = 192.168.1.1:8888 \
     ro.vendor.sdkversion = $(CURRENT_SDK_VERSION) \
     vendor.gralloc.disable_afbc = 0
 
@@ -101,10 +104,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
                 ro.vendor.frameratelock=true
 
 PRODUCT_PROPERTY_OVERRIDES += \
-		ro.factory.storage_suppexfat=true
+       ro.factory.storage_suppexfat=true
 
 PRODUCT_PACKAGES += \
-		fsck.exfat \
-		mkfs.exfat \
-		tune.exfat \
-		dump.exfat
+       fsck.exfat \
+       mkfs.exfat \
+       tune.exfat \
+       dump.exfat
