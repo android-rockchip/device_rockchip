@@ -26,6 +26,7 @@ PRODUCT_KERNEL_CONFIG ?= rockchip_defconfig pcie_wifi.config
 #BOARD_AVB_ENABLE := true
 # used for fstab_generator, sdmmc controller address
 #PRODUCT_BOOT_DEVICE := fe2e0000.mmc
+PRODUCT_BOOT_DEVICE := fe2e0000.mmc,fe2c0000.mmc,fe190000.pcie,fe150000.pcie,fe210000.sata
 PRODUCT_SDMMC_DEVICE := fe2c0000.mmc
 
 SF_PRIMARY_DISPLAY_ORIENTATION := 0
@@ -45,8 +46,6 @@ BOARD_OVERRIDE_RS_CPU_VARIANT_64 := cortex-a55
 
 TARGET_USES_64_BIT_BCMDHD := true
 TARGET_USES_64_BIT_BINDER := true
-
-PRODUCT_KERNEL_VERSION := 5.10
 
 # HACK: Build apps as 64b for volantis_64_only
 ifneq (,$(filter ro.zygote=zygote64, $(PRODUCT_DEFAULT_PROPERTY_OVERRIDES)))
