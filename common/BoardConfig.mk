@@ -17,8 +17,8 @@
 TARGET_USES_64_BIT_BINDER := true
 TARGET_BOARD_PLATFORM ?= rk3288
 TARGET_BOARD_HARDWARE ?= rk30board
-PRODUCT_KERNEL_VERSION ?= 4.19
-PRODUCT_KERNEL_PATH ?= kernel-$(PRODUCT_KERNEL_VERSION)
+PRODUCT_KERNEL_VERSION := 5.10
+PRODUCT_KERNEL_PATH := kernel/rockchip/kernel-$(PRODUCT_KERNEL_VERSION)
 
 # value: tablet,box,phone,vehicle
 # It indicates whether to be tablet platform or not
