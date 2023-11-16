@@ -29,7 +29,7 @@ BUILD_PACKING=false
 BUILD_VARIANT=`get_build_var TARGET_BUILD_VARIANT`
 KERNEL_DTS=""
 BUILD_VERSION=""
-BUILD_JOBS=16
+BUILD_JOBS=$(nproc)
 
 # check pass argument
 while getopts "UCKABpouv:d:V:J:" arg
@@ -136,12 +136,9 @@ fi
 fi
 
 if [ "$BUILD_KERNEL_WITH_CLANG" = true ] ; then
-if [ "$KERNEL_ARCH" = "arm64" ]; then
-    ADDON_ARGS="CROSS_COMPILE=aarch64-linux-gnu- LLVM=1 LLVM_IAS=1"
-else
-    ADDON_ARGS="CC=clang LD=ld.lld"
+ADDON_ARGS="CROSS_COMPILE=aarch64-linux-gnu- LLVM=1 LLVM_IAS=1"
 fi
-fi
+
 # build kernel
 if [ "$BUILD_KERNEL" = true ] ; then
 echo "Start build kernel"
@@ -164,12 +161,6 @@ fi
 echo "package resoure.img with charger images"
 cd u-boot && ./scripts/pack_resource.sh ../$LOCAL_KERNEL_PATH/resource.img && cp resource.img ../$LOCAL_KERNEL_PATH/resource.img && cd -
 
-IS_VEHICLE=`get_build_var BOARD_ROCKCHIP_VEHICLE`
-LOGO_VEHICLE_PATH=`get_build_var TARGET_DEVICE_DIR`
-if [ $IS_VEHICLE = "true" ]; then
-./$LOGO_VEHICLE_PATH/pack_resource.sh ./$LOCAL_KERNEL_PATH/resource.img && cp resource.img ./$LOCAL_KERNEL_PATH/resource.img
-fi
-
 # build android
 if [ "$BUILD_ANDROID" = true ] ; then
     # build OTA
@@ -180,57 +171,14 @@ if [ "$BUILD_ANDROID" = true ] ; then
             echo "make ab image and generate ota package"
             make installclean
             make -j$BUILD_JOBS
-            # check the result of make
-            if [ $? -eq 0 ]; then
-                echo "Build android ok!"
-            else
-                echo "Build android failed!"
-                exit 1
-            fi
-
             make dist -j$BUILD_JOBS
-            # check the result of make
-            if [ $? -eq 0 ]; then
-                echo "Build android ok!"
-            else
-                echo "Build android failed!"
-                exit 1
-            fi
             ./mkimage_ab.sh ota
-            # check the result of make
-            if [ $? -eq 0 ]; then
-                echo "Build android ok!"
-            else
-                echo "Build android failed!"
-                exit 1
-            fi
         else
             echo "generate ota package"
 	    make installclean
 	    make -j$BUILD_JOBS
-            # check the result of make
-            if [ $? -eq 0 ]; then
-                echo "Build android ok!"
-            else
-                echo "Build android failed!"
-                exit 1
-            fi
 	    make dist -j$BUILD_JOBS
-            # check the result of make
-            if [ $? -eq 0 ]; then
-                echo "Build android ok!"
-            else
-                echo "Build android failed!"
-                exit 1
-            fi
             ./mkimage.sh ota
-            # check the result of make
-            if [ $? -eq 0 ]; then
-                echo "Build android ok!"
-            else
-                echo "Build android failed!"
-                exit 1
-            fi
         fi
         cp $OUT/$INTERNAL_OTA_PACKAGE_TARGET $IMAGE_PATH/
         cp $OUT/$INTERNAL_OTA_PACKAGE_OBJ_TARGET $IMAGE_PATH/
